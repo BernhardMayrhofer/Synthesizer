@@ -12,14 +12,25 @@ for (let i = 0; i < buffer.length; i++) {
     channelData[i] = Math.random() * 2 - 1 ;
 }
 
+// https://freesound.org/people/TheFlakesMaster/sounds/399897/
+
+// const context;
+// const bufferLoader;
+
+// bufferLoader = new BufferLoader(
+//     context,
+//     [
+//      "/audio/hi_hat.ogg",
+//     "/audio/piano_c.wav"
+//     ],
+//     finishedLoading
+// );
+
+// bufferLoader.load();
+
 const primaryGainControl = audioContext.createGain();
 primaryGainControl.gain.setValueAtTime(0.05,0);
 primaryGainControl.connect(audioContext.destination);
-
-const snareFilter = audioContext.createBiquadFilter();
-snareFilter.type = "highpass";
-snareFilter.frequency.value = 1500;
-snareFilter.connect(primaryGainControl);
 
 function white_noise() {
 
@@ -38,6 +49,11 @@ function snare() {
     const whiteNoiseGain = audioContext.createGain();
     whiteNoiseGain.gain.setValueAtTime(1,audioContext.currentTime);
     whiteNoiseGain.gain.exponentialRampToValueAtTime(0.01,audioContext.currentTime + 0.2);
+
+    const snareFilter = audioContext.createBiquadFilter();
+    snareFilter.type = "highpass";
+    snareFilter.frequency.value = 1500;
+    snareFilter.connect(primaryGainControl);
 
     whiteNoiseSource.connect(whiteNoiseGain);
     whiteNoiseGain.connect(snareFilter);
@@ -77,4 +93,14 @@ function kick() {
     kickOscillator.start();
     kickOscillator.stop(audioContext.currentTime + 0.5);
 
+}
+
+function hi_hat() {
+    const hi_hat_file = new Audio("audio/hi_hat.ogg");
+    hi_hat_file.crossOrigin = "anonymous";
+
+    const hi_hatSource = audioContext.createMediaElementSource(hi_hat_file);
+    hi_hatSource.connect(primaryGainControl);
+
+    hi_hatSource.start();
 }
