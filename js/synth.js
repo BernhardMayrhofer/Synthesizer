@@ -12,25 +12,25 @@ for (let i = 0; i < buffer.length; i++) {
     channelData[i] = Math.random() * 2 - 1 ;
 }
 
-// https://freesound.org/people/TheFlakesMaster/sounds/399897/
-
-// const context;
-// const bufferLoader;
-
-// bufferLoader = new BufferLoader(
-//     context,
-//     [
-//      "/audio/hi_hat.ogg",
-//     "/audio/piano_c.wav"
-//     ],
-//     finishedLoading
-// );
-
-// bufferLoader.load();
-
 const primaryGainControl = audioContext.createGain();
 primaryGainControl.gain.setValueAtTime(0.05,0);
 primaryGainControl.connect(audioContext.destination);
+
+const notes = [
+    {name:'C',frequency:261.63},
+    {name:'C#',frequency:277.18},
+    {name:'D',frequency:293.66},
+    {name:'D#',frequency:311.13},
+    {name:'E',frequency:329.63},
+    {name:'F',frequency:349.23},
+    {name:'F#',frequency:369.99},
+    {name:'G',frequency:392.0},
+    {name:'G#',frequency:415.3},
+    {name:'A',frequency:440.0},
+    {name:'A#',frequency:466.16},
+    {name:'B',frequency:493.88},
+    {name:'C',frequency:523.25},
+];
 
 function white_noise() {
 
@@ -95,12 +95,41 @@ function kick() {
 
 }
 
-function hi_hat() {
-    const hi_hat_file = new Audio("audio/hi_hat.ogg");
-    hi_hat_file.crossOrigin = "anonymous";
+async function hi_hat() {
 
-    const hi_hatSource = audioContext.createMediaElementSource(hi_hat_file);
+    // https://freesound.org/people/TheFlakesMaster/sounds/399897/
+
+    const hi_hat_url = 'https://unpkg.com/@teropa/drumkit@1.1.0/src/assets/hatOpen2.mp3';//?raw=true';
+    const response = await fetch(hi_hat_url,{mode: 'cors'});
+
+    const soundBuffer = await response.arrayBuffer()
+
+    const hi_hatBuffer = await audioContext.decodeAudioData(soundBuffer);
+
+    const hi_hatSource = audioContext.createBufferSource();
+    hi_hatSource.buffer = hi_hatBuffer;
+    // hi_hatSource.playbackRate.setValueAtTime(1.0);
     hi_hatSource.connect(primaryGainControl);
 
     hi_hatSource.start();
 }
+
+//Create Notes
+document.body.appendChild(document.createElement("br"));
+
+notes.forEach(({name,frequency}) => {
+    const noteButton = document.createElement('button');
+    noteButton.innerText = name;
+    noteButton.addEventListener('click', () => {
+        const noteOscillator = audioContext.createOscillator();
+        noteOscillator.type = 'square';
+        noteOscillator.frequency.setValueAtTime(frequency,audioContext.currentTime);
+        
+        noteOscillator.connect(primaryGainControl);
+        noteOscillator.start();
+        noteOscillator.stop(audioContext.currentTime + 1.0);
+    });
+    document.body.appendChild(noteButton);
+});
+
+
